@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Figuras Geométricas</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        /* Pantalla de inicio */
+        #start-screen {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #start-screen h2 {
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #start-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #start-button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Pantalla de juego */
+        #game-screen {
+            display: none;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .hint-button {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .hint-button:hover {
+            background-color: #d35400;
+        }
+
+        .game-area {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .shapes-container, .names-container {
+            width: 48%;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+
+        .shapes-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .shape {
+            width: 100px;
+            height: 100px;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .shape:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .shape.dragging {
+            opacity: 0.7;
+        }
+
+        .names-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .name-slot {
+            display: flex;
+            align-items: center;
+            height: 60px;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .name-slot.highlight {
+            background-color: #eaf7ff;
+            border-style: solid;
+        }
+
+        .name-slot.correct {
+            border-color: #2ecc71;
+            background-color: #e8f8f5;
+            border-style: solid;
+        }
+
+        .name-label {
+            font-size: 18px;
+            font-weight: bold;
+            margin-right: 15px;
+            width: 120px;
+        }
+
+        .shape-container {
+            height: 50px;
+            width: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .shape-container img {
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        /* Modal de victoria */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal h2 {
+            color: #2ecc71;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .result {
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .restart-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .restart-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Juego de Figuras Geométricas</h1>
+
+        <!-- Pantalla de inicio -->
+        <div id="start-screen">
+            <h2>¡Bienvenido al Juego de Figuras Geométricas!</h2>
+            <p>Arrastra cada figura geométrica a su nombre correspondiente.</p>
+            
+            <div class="input-group">
+                <label for="player-name">Nombre:</label>
+                <input type="text" id="player-name" placeholder="Ingresa tu nombre" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="player-course">Curso:</label>
+                <input type="text" id="player-course" placeholder="Ingresa tu curso" required>
+            </div>
+            
+            <button id="start-button">Comenzar juego</button>
+        </div>
+
+        <!-- Pantalla de juego -->
+        <div id="game-screen">
+            <div class="game-container">
+                <div class="header">
+                    <div class="player-info">
+                        <div id="player-display">Jugador: <span id="name-display"></span></div>
+                        <div id="course-display">Curso: <span id="course-display-value"></span></div>
+                    </div>
+                    <div class="timer" id="timer">00:00</div>
+                    <button class="hint-button" id="hint-button">Pista</button>
+                </div>
+                
+                <div class="game-area">
+                    <div class="shapes-container" id="shapes-container">
+                        <!-- Las figuras se generarán con JavaScript -->
+                    </div>
+                    
+                    <div class="names-container" id="names-container">
+                        <!-- Los slots de nombres se generarán con JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de victoria -->
+        <div class="modal" id="victory-modal">
+            <div class="modal-content">
+                <h2>¡Ganaste!</h2>
+                <div class="result" id="result-text"></div>
+                <button class="restart-button" id="restart-button">Jugar de nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Definición de figuras geométricas
+        const shapes = [
+            { id: 'circle', name: 'Círculo', svg: createCircleSVG() },
+            { id: 'triangle', name: 'Triángulo', svg: createTriangleSVG() },
+            { id: 'square', name: 'Cuadrado', svg: createSquareSVG() },
+            { id: 'pentagon', name: 'Pentágono', svg: createPentagonSVG() },
+            { id: 'hexagon', name: 'Hexágono', svg: createHexagonSVG() }
+        ];
+
+        // Variables globales
+        let startTime;
+        let timerInterval;
+        let correctMatches = 0;
+        let playerName = '';
+        let playerCourse = '';
+        let currentHint = null;
+
+        // Elementos del DOM
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const startButton = document.getElementById('start-button');
+        const playerNameInput = document.getElementById('player-name');
+        const playerCourseInput = document.getElementById('player-course');
+        const nameDisplay = document.getElementById('name-display');
+        const courseDisplay = document.getElementById('course-display-value');
+        const timerElement = document.getElementById('timer');
+        const shapesContainer = document.getElementById('shapes-container');
+        const namesContainer = document.getElementById('names-container');
+        const victoryModal = document.getElementById('victory-modal');
+        const resultText = document.getElementById('result-text');
+        const restartButton = document.getElementById('restart-button');
+        const hintButton = document.getElementById('hint-button');
+
+        // Funciones para crear SVGs
+        function createCircleSVG() {
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" fill="#FF5252" />
+            </svg>`;
+        }
+
+        function createTriangleSVG() {
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,10 90,90 10,90" fill="#4CAF50" />
+            </svg>`;
+        }
+
+        function createSquareSVG() {
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="10" width="80" height="80" fill="#2196F3" />
+            </svg>`;
+        }
+
+        function createPentagonSVG() {
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,10 90,40 75,90 25,90 10,40" fill="#9C27B0" />
+            </svg>`;
+        }
+
+        function createHexagonSVG() {
+            return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="50,10 90,30 90,70 50,90 10,70 10,30" fill="#FF9800" />
+            </svg>`;
+        }
+
+        // Función para barajar un arreglo (algoritmo Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Iniciar el juego
+        startButton.addEventListener('click', function() {
+            playerName = playerNameInput.value.trim();
+            playerCourse = playerCourseInput.value.trim();
+            
+            if (!playerName || !playerCourse) {
+                alert('Por favor ingresa tu nombre y curso para comenzar.');
+                return;
+            }
+            
+            nameDisplay.textContent = playerName;
+            courseDisplay.textContent = playerCourse;
+            
+            startScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            
+            initGame();
+        });
+
+        // Inicializar el juego
+        function initGame() {
+            // Limpiar elementos
+            shapesContainer.innerHTML = '';
+            namesContainer.innerHTML = '';
+            correctMatches = 0;
+            
+            // Barajar figuras
+            const shuffledShapes = shuffleArray([...shapes]);
+            
+            // Crear elementos de figuras
+            shuffledShapes.forEach(shape => {
+                const shapeElement = document.createElement('div');
+                shapeElement.className = 'shape';
+                shapeElement.id = shape.id;
+                shapeElement.innerHTML = shape.svg;
+                shapeElement.setAttribute('draggable', true);
+                shapeElement.dataset.id = shape.id;
+                
+                // Eventos de arrastre
+                shapeElement.addEventListener('dragstart', dragStart);
+                shapeElement.addEventListener('dragend', dragEnd);
+                
+                shapesContainer.appendChild(shapeElement);
+            });
+            
+            // Crear slots de nombres (en orden diferente)
+            const shuffledNames = shuffleArray([...shapes]);
+            
+            shuffledNames.forEach(shape => {
+                const nameSlot = document.createElement('div');
+                nameSlot.className = 'name-slot';
+                nameSlot.dataset.id = shape.id;
+                
+                const nameLabel = document.createElement('div');
+                nameLabel.className = 'name-label';
+                nameLabel.textContent = shape.name;
+                
+                const shapeContainer = document.createElement('div');
+                shapeContainer.className = 'shape-container';
+                
+                nameSlot.appendChild(nameLabel);
+                nameSlot.appendChild(shapeContainer);
+                
+                // Eventos de zona de destino
+                nameSlot.addEventListener('dragover', dragOver);
+                nameSlot.addEventListener('dragenter', dragEnter);
+                nameSlot.addEventListener('dragleave', dragLeave);
+                nameSlot.addEventListener('drop', drop);
+                
+                namesContainer.appendChild(nameSlot);
+            });
+            
+            // Iniciar temporizador
+            startTimer();
+            
+            // Configurar botón de pista
+            hintButton.addEventListener('click', showHint);
+        }
+
+        // Funciones para el temporizador
+        function startTimer() {
+            startTime = Date.now();
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
+            const seconds = (elapsedTime % 60).toString().padStart(2, '0');
+            timerElement.textContent = `${minutes}:${seconds}`;
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // Funciones de arrastre y soltar
+        function dragStart(e) {
+            if (this.parentElement.classList.contains('shape-container')) {
+                return; // No permitir arrastrar si ya está colocado correctamente
+            }
+            
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+            
+            // Eliminar cualquier pista anterior
+            if (currentHint) {
+                document.querySelectorAll('.name-slot').forEach(slot => {
+                    slot.classList.remove('highlight');
+                });
+                currentHint = null;
+            }
+        }
+
+        function dragEnd() {
+            this.classList.remove('dragging');
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function dragEnter(e) {
+            e.preventDefault();
+            if (!this.classList.contains('correct')) {
+                this.classList.add('highlight');
+            }
+        }
+
+        function dragLeave() {
+            this.classList.remove('highlight');
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            this.classList.remove('highlight');
+            
+            // Si ya hay una figura correcta, no permitir soltar
+            if (this.classList.contains('correct')) {
+                return;
+            }
+            
+            const shapeId = e.dataTransfer.getData('text/plain');
+            const targetId = this.dataset.id;
+            const draggableElement = document.getElementById(shapeId);
+            const shapeContainer = this.querySelector('.shape-container');
+            
+            // Verificar si es una coincidencia correcta
+            if (shapeId === targetId) {
+                this.classList.add('correct');
+                draggableElement.setAttribute('draggable', false);
+                shapeContainer.appendChild(draggableElement);
+                correctMatches++;
+                
+                // Verificar si el juego está completo
+                if (correctMatches === shapes.length) {
+                    gameComplete();
+                }
+            }
+        }
+
+        // Función para mostrar pista
+        function showHint() {
+            // Limpiar pista anterior si existe
+            if (currentHint) {
+                document.querySelectorAll('.name-slot').forEach(slot => {
+                    slot.classList.remove('highlight');
+                });
+            }
+            
+            // Encontrar una figura que aún no esté correctamente colocada
+            const unmatched = [];
+            shapesContainer.querySelectorAll('.shape').forEach(shape => {
+                if (shape.parentElement === shapesContainer) {
+                    unmatched.push(shape.dataset.id);
+                }
+            });
+            
+            if (unmatched.length === 0) return;
+            
+            // Seleccionar una al azar y resaltar su slot correcto
+            const randomShape = unmatched[Math.floor(Math.random() * unmatched.length)];
+            const correctSlot = document.querySelector(`.name-slot[data-id="${randomShape}"]`);
+            
+            correctSlot.classList.add('highlight');
+            currentHint = randomShape;
+            
+            // Desactivar pista después de 3 segundos
+            setTimeout(() => {
+                if (currentHint) {
+                    correctSlot.classList.remove('highlight');
+                    currentHint = null;
+                }
+            }, 3000);
+        }
+
+        // Función para manejar la victoria
+        function gameComplete() {
+            stopTimer();
+            
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            
+            let timeText = '';
+            if (minutes > 0) {
+                timeText = `${minutes} minuto${minutes !== 1 ? 's' : ''} y `;
+            }
+            timeText += `${seconds} segundo${seconds !== 1 ? 's' : ''}`;
+            
+            resultText.innerHTML = `
+                <strong>Nombre:</strong> ${playerName}<br>
+                <strong>Curso:</strong> ${playerCourse}<br>
+                <strong>Tiempo:</strong> ${timeText}<br><br>
+                ¡Has completado el juego correctamente!
+            `;
+            
+            victoryModal.style.display = 'flex';
+        }
+
+        // Reiniciar el juego
+        restartButton.addEventListener('click', function() {
+            victoryModal.style.display = 'none';
+            initGame();
+        });
+    </script>
+</body>
+</html>
